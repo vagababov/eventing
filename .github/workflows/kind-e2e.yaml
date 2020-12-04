@@ -5,7 +5,7 @@ on:
     branches: [ 'master' ]
 
   schedule:
-  - cron: '0 */4 * * *'
+  - cron: '0 */2 * * *'
 
 defaults:
   run:
@@ -26,6 +26,7 @@ jobs:
         - v1.19.1
 
         test-suite:
+        - ./test/rekt/...
         - ./test/e2e
         - ./test/conformance
 
@@ -163,10 +164,13 @@ jobs:
 
     - name: Wait for things to be up
       run: |
-        kubectl wait pod --for=condition=Ready -n ${SYSTEM_NAMESPACE} -l '!job-name'
+        kubectl -v 9 wait pod --for=condition=Ready -n ${SYSTEM_NAMESPACE} -l '!job-name'
 
     - name: Run e2e Tests
       run: |
+        export GO111MODULE=on
+        export GOFLAGS=-mod=vendor
+        export SYSTEM_NAMESPACE=knative-eventing
         # Run the tests tagged as e2e on the KinD cluster.
         go test -race -count=1 -parallel=12 -timeout=30m -tags=e2e \
            ${{ matrix.test-suite }} ${{ matrix.extra-test-flags }}
