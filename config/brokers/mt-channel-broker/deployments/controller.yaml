@@ -20,7 +20,6 @@ metadata:
   labels:
     eventing.knative.dev/release: devel
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: mt-broker-controller
@@ -42,7 +41,7 @@ spec:
             weight: 100
 
       serviceAccountName: eventing-controller
-
+      enableServiceLinks: false
       containers:
       - name: mt-broker-controller
         terminationMessagePolicy: FallbackToLogsOnError

@@ -21,7 +21,6 @@ metadata:
     eventing.knative.dev/release: devel
     knative.dev/high-availability: "true"
 spec:
-  replicas: 1
   selector:
     matchLabels: &labels
       messaging.knative.dev/channel: in-memory-channel
@@ -31,6 +30,7 @@ spec:
       labels: *labels
     spec:
       serviceAccountName: imc-controller
+      enableServiceLinks: false
       containers:
       - name: controller
         image: ko://knative.dev/eventing/cmd/in_memory/channel_controller

@@ -21,7 +21,6 @@ metadata:
     eventing.knative.dev/release: devel
     knative.dev/high-availability: "true"
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: eventing-controller
@@ -43,7 +42,7 @@ spec:
             weight: 100
 
       serviceAccountName: eventing-controller
-
+      enableServiceLinks: false
       containers:
       - name: eventing-controller
         terminationMessagePolicy: FallbackToLogsOnError

@@ -1,18 +1,19 @@
 /*
- * Copyright 2020 The Knative Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+Copyright 2020 The Knative Authors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package kncloudevents
 
 import (
@@ -36,11 +37,30 @@ type HTTPMessageReceiver struct {
 
 	server   *http.Server
 	listener net.Listener
+
+	checker http.HandlerFunc
 }
 
-func NewHTTPMessageReceiver(port int) *HTTPMessageReceiver {
-	return &HTTPMessageReceiver{
+// HTTPMessageReceiverOption enables further configuration of a HTTPMessageReceiver.
+type HTTPMessageReceiverOption func(*HTTPMessageReceiver)
+
+func NewHTTPMessageReceiver(port int, o ...HTTPMessageReceiverOption) *HTTPMessageReceiver {
+	h := &HTTPMessageReceiver{
 		port: port,
+	}
+	for _, opt := range o {
+		opt(h)
+	}
+	return h
+}
+
+// WithChecker takes a handler func which will run as an additional health check in Drainer.
+// kncloudevents HTTPMessageReceiver uses Drainer to perform health check.
+// By default, Drainer directly writes StatusOK to kubelet probe if the Pod is not draining.
+// Users can configure customized liveness and readiness check logic by defining checker here.
+func WithChecker(checker http.HandlerFunc) HTTPMessageReceiverOption {
+	return func(h *HTTPMessageReceiver) {
+		h.checker = checker
 	}
 }
 
@@ -52,7 +72,8 @@ func (recv *HTTPMessageReceiver) StartListen(ctx context.Context, handler http.H
 	}
 
 	drainer := &handlers.Drainer{
-		Inner: CreateHandler(handler),
+		Inner:       CreateHandler(handler),
+		HealthCheck: recv.checker,
 	}
 	recv.server = &http.Server{
 		Addr:    recv.listener.Addr().String(),

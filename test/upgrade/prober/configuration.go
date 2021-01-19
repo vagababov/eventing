@@ -64,6 +64,7 @@ type Config struct {
 	Serving       ServingConfig
 	FailOnErrors  bool
 	OnDuplicate   DuplicateAction
+	BrokerOpts    []resources.BrokerV1Beta1Option
 }
 
 // Wathola represents options related strictly to wathola testing tool.
@@ -76,6 +77,8 @@ type Wathola struct {
 
 // ConfigMap represents options of wathola config toml file.
 type ConfigMap struct {
+	// ConfigTemplate is a template file that will be compiled to the configmap
+	ConfigTemplate   string
 	ConfigMapName    string
 	ConfigMountPoint string
 	ConfigFilename   string
@@ -97,12 +100,14 @@ func NewConfig(namespace string) *Config {
 		FinishedSleep: defaultFinishedSleep,
 		FailOnErrors:  true,
 		OnDuplicate:   Warn,
+		BrokerOpts:    make([]resources.BrokerV1Beta1Option, 0),
 		Serving: ServingConfig{
 			Use:         false,
 			ScaleToZero: true,
 		},
 		Wathola: Wathola{
 			ConfigMap: ConfigMap{
+				ConfigTemplate:   defaultConfigFilename,
 				ConfigMapName:    defaultConfigName,
 				ConfigMountPoint: fmt.Sprintf("%s/%s", defaultHomedir, defaultConfigHomedirPath),
 				ConfigFilename:   defaultConfigFilename,
@@ -129,7 +134,7 @@ func (p *prober) deployConfiguration() {
 }
 
 func (p *prober) deployBroker() {
-	p.client.CreateBrokerV1Beta1OrFail(p.config.BrokerName)
+	p.client.CreateBrokerV1Beta1OrFail(p.config.BrokerName, p.config.BrokerOpts...)
 }
 
 func (p *prober) fetchBrokerURL() (*apis.URL, error) {
@@ -160,7 +165,7 @@ func (p *prober) deployConfigMap() {
 	p.log.Infof("Deploying config map: \"%s/%s\"", p.config.Namespace, name)
 	brokerURL, err := p.fetchBrokerURL()
 	ensure.NoError(err)
-	configData := p.compileTemplate(p.config.ConfigFilename, brokerURL)
+	configData := p.compileTemplate(p.config.ConfigTemplate, brokerURL)
 	p.client.CreateConfigMapOrFail(name, p.config.Namespace, map[string]string{
 		p.config.ConfigFilename: configData,
 	})
