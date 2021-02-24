@@ -184,7 +184,7 @@ spec:
   - <<: *version
     name: v1beta1
     served: true
-    storage: true
+    storage: false
     schema:
       openAPIV3Schema:
         type: object
@@ -323,7 +323,7 @@ spec:
   - <<: *version
     name: v1beta2
     served: true
-    storage: false
+    storage: true
     schema:
       openAPIV3Schema:
         type: object
@@ -354,8 +354,8 @@ spec:
                         Mutually exclusive with `dataBase64`.'
                 type: string
               dataBase64:
-                description: 'DataBase64 is base64 encoded binary data used as the body of the event posted to the sink.
-                        Default is empty. Mutually exclusive with `data`.'
+                description: "DataBase64 is the base64-encoded string of the actual event's body posted to the sink.
+                        Default is empty. Mutually exclusive with `data`."
                 type: string
               schedule:
                 description: 'Schedule is the cron schedule. Defaults to `* * * * *`.'

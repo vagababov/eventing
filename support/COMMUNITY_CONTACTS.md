@@ -21,9 +21,9 @@ community contact's duty (subject to change) is as followed:
 ### Monday
 
 - Check 'Eventing Triage' Peribolos group
-  https://github.com/knative/community/blob/509d00841920181611a8457da3f655ef014ff9bf/peribolos/knative.yaml#L669
-  and send a PR to add yourself if you aren't already in there.
-- Check the [Eventing test grid](https://testgrid.knative.dev/eventing) for
+  https://github.com/knative/community/blob/master/peribolos/knative.yaml and
+  send a PR to add yourself if you aren't already in there.
+- Check the [Eventing test grid](https://testgrid.k8s.io/knative-eventing) for
   flakiness to pick a test and focus on fixing it during your week. Once you
   pick the test flake, assign the corresponding bug filed by flakiness test
   reporter to yourself so that others won't pick the same test to fix.
@@ -78,7 +78,7 @@ echo ${VOLUNTEERS} ${OWNERS} | sed 's/ /\n/g' | grep -v ${NON_ROSTER} | sort | u
 ```
 
 - [grantr](https://github.com/grantr)
-- [Harwayne](https://github.com/Harwayne)
+- [antoineco](https://github.com/antoineco)
 - [lionelvillard](https://github.com/lionelvillard)
 - [matzew](https://github.com/matzew)
 - [n3wscott](https://github.com/n3wscott)
@@ -103,19 +103,19 @@ echo ${VOLUNTEERS} ${OWNERS} | sed 's/ /\n/g' | grep -v ${NON_ROSTER} | sort | u
 | 2021-01-18 | [grantr](https://github.com/grantr)                   |
 | 2021-01-25 | [lionelvillard](https://github.com/lionelvillard)     |
 | 2021-02-01 | [zhongduo](https://github.com/zhongduo)               |
-| 2021-02-08 | [Harwayne](https://github.com/Harwayne)               |
+| 2021-02-08 | [antoineco](https://github.com/antoineco)             |
 | 2021-02-15 | [matzew](https://github.com/matzew)                   |
-| 2021-02-22 | [lberk](https://github.com/lberk)                     |
+| 2021-02-22 | [vaikas](https://github.com/vaikas)                   |
 | 2021-03-01 | [pierDipi](https://github.com/pierDipi)               |
 | 2021-03-08 | [aliok](https://github.com/aliok)                     |
 | 2021-03-15 | [slinkydeveloper](https://github.com/slinkydeveloper) |
 | 2021-03-22 | [devguyio](https://github.com/devguyio)               |
 | 2021-03-29 | [n3wscott](https://github.com/n3wscott)               |
-| 2021-04-05 | [vaikas](https://github.com/vaikas)                   |
+| 2021-04-05 | [lberk](https://github.com/lberk)                     |
 | 2021-04-12 | [grantr](https://github.com/grantr)                   |
 | 2021-04-19 | [lionelvillard](https://github.com/lionelvillard)     |
 | 2021-04-26 | [slinkydeveloper](https://github.com/slinkydeveloper) |
-| 2021-05-03 | [Harwayne](https://github.com/Harwayne)               |
+| 2021-05-03 | [antoineco](https://github.com/antoineco)             |
 | 2021-05-10 | [matzew](https://github.com/matzew)                   |
 | 2021-05-17 | [lberk](https://github.com/lberk)                     |
 | 2021-05-24 | [pierDipi](https://github.com/pierDipi)               |

@@ -40,6 +40,9 @@ const (
 	retryTimeout  = 4 * time.Minute
 )
 
+// EventInfoMatcher returns an error if the input event info doesn't match the criteria
+type EventInfoMatcher func(eventshub.EventInfo) error
+
 // Stateful store of events published by eventshub pod it is pointed at.
 // Implements k8s.EventHandler
 type Store struct {
@@ -119,7 +122,7 @@ func (ei *Store) isMyEvent(event *corev1.Event) bool {
 // The error array contains the eventual match errors, while the last return error contains
 // an eventual communication error while trying to get the events from the eventshub pod
 func (ei *Store) Find(matchers ...EventInfoMatcher) ([]eventshub.EventInfo, eventshub.SearchedInfo, []error, error) {
-	f := AllOf(matchers...)
+	f := allOf(matchers...)
 	const maxLastEvents = 5
 	allMatch := []eventshub.EventInfo{}
 	ei.lock.Lock()
@@ -154,7 +157,7 @@ func (ei *Store) Find(matchers ...EventInfoMatcher) ([]eventshub.EventInfo, even
 // This method fails the test if the assert is not fulfilled.
 func (ei *Store) AssertAtLeast(min int, matchers ...EventInfoMatcher) []eventshub.EventInfo {
 	ei.tb.Helper()
-	events, err := ei.waitAtLeastNMatch(AllOf(matchers...), min)
+	events, err := ei.waitAtLeastNMatch(allOf(matchers...), min)
 	if err != nil {
 		ei.tb.Fatalf("Timeout waiting for at least %d matches.\nError: %+v", min, errors.WithStack(err))
 	}
@@ -242,4 +245,16 @@ func formatErrors(errs []error) string {
 		sb.WriteRune('\n')
 	}
 	return sb.String()
+}
+
+// We don't need to expose this, since all the signatures already executes this
+func allOf(matchers ...EventInfoMatcher) EventInfoMatcher {
+	return func(have eventshub.EventInfo) error {
+		for _, m := range matchers {
+			if err := m(have); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 }

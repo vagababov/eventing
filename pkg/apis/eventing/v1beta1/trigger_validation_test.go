@@ -23,6 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
@@ -59,6 +60,7 @@ var (
 )
 
 func TestTriggerValidation(t *testing.T) {
+	invalidString := "invalid time"
 	tests := []struct {
 		name string
 		t    *Trigger
@@ -214,6 +216,21 @@ func TestTriggerValidation(t *testing.T) {
 				Paths:   []string{injectionAnnotationPath},
 				Message: `The provided injection annotation value can only be "enabled" or "disabled", not "wut"`,
 			},
+		}, {
+			name: "invalid delivery, invalid delay string",
+			t: &Trigger{
+				ObjectMeta: v1.ObjectMeta{
+					Namespace: "test-ns",
+				},
+				Spec: TriggerSpec{
+					Broker:     "test_broker",
+					Filter:     validEmptyFilter,
+					Subscriber: validSubscriber,
+					Delivery: &eventingduckv1.DeliverySpec{
+						BackoffDelay: &invalidString,
+					},
+				}},
+			want: apis.ErrInvalidValue(invalidString, "spec.delivery.backoffDelay"),
 		},
 	}
 
@@ -227,7 +244,56 @@ func TestTriggerValidation(t *testing.T) {
 	}
 }
 
+func TestTriggerUpdateValidation(t *testing.T) {
+	tests := []struct {
+		name string
+		t    *Trigger
+		tNew *Trigger
+		want *apis.FieldError
+	}{{
+		name: "invalid update, broker changed",
+		t: &Trigger{
+			ObjectMeta: v1.ObjectMeta{
+				Namespace: "test-ns",
+			},
+			Spec: TriggerSpec{
+				Broker:     "test_broker",
+				Filter:     validEmptyFilter,
+				Subscriber: validSubscriber,
+			}},
+		tNew: &Trigger{
+			ObjectMeta: v1.ObjectMeta{
+				Namespace: "test-ns",
+			},
+			Spec: TriggerSpec{
+				Broker:     "anotherBroker",
+				Filter:     validEmptyFilter,
+				Subscriber: validSubscriber,
+			}},
+		want: &apis.FieldError{
+			Message: "Immutable fields changed (-old +new)",
+			Paths:   []string{"spec", "broker"},
+			Details: `{string}:
+	-: "test_broker"
+	+: "anotherBroker"
+`,
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := apis.WithinUpdate(context.Background(), test.t)
+			got := test.tNew.Validate(ctx)
+			if diff := cmp.Diff(test.want.Error(), got.Error()); diff != "" {
+				t.Error("Trigger.Validate (-want, +got) =", diff)
+			}
+		})
+	}
+}
+
 func TestTriggerSpecValidation(t *testing.T) {
+	invalidString := "invalid time"
+
 	tests := []struct {
 		name string
 		ts   *TriggerSpec
@@ -342,6 +408,17 @@ func TestTriggerSpecValidation(t *testing.T) {
 			Subscriber: validSubscriber,
 		},
 		want: &apis.FieldError{},
+	}, {
+		name: "invalid delivery, invalid delay string",
+		ts: &TriggerSpec{
+			Broker:     "test_broker",
+			Filter:     validEmptyFilter,
+			Subscriber: validSubscriber,
+			Delivery: &eventingduckv1.DeliverySpec{
+				BackoffDelay: &invalidString,
+			},
+		},
+		want: apis.ErrInvalidValue(invalidString, "delivery.backoffDelay"),
 	}}
 
 	for _, test := range tests {
